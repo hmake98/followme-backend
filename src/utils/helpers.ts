@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { PubSub } from 'apollo-server'
+import { PubSub } from 'graphql-subscriptions'
 import { sign, verify } from 'jsonwebtoken'
 import { APP_SECRET, tokens } from './constants'
 import { Context, Token } from '../types'

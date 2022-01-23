@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DB_URL")
 }
 
@@ -10,22 +10,121 @@ generator prisma {
 }
 
 model User {
+  id          Int        @id @default(autoincrement())
+  username    String     @unique
+  email       String     @unique
+  password    String
+  name        String?
+  dateOfBirth String?
+  gender      Gender?
+  posts       Post[]
+  role        Role
+  friends     Friends[]  @relation(name: "users")
+  userFriends Friends[]  @relation(name: "friend_users")
+  deviceId    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  share       Share[]
+  likes       Likes[]
+  comments    Comments[] @relation("commented_by")
+  settings    Settings   @relation(fields: [settingsId], references: [id])
+  settingsId  Int
+}
+
+model Friends {
+  id         Int      @id @default(autoincrement())
+  status     Status
+  fromUser   User?    @relation(fields: [fromUserId], references: [id], name: "users")
+  toUser     User?    @relation(fields: [toUserId], references: [id], name: "friend_users")
+  toUserId   Int?
+  fromUserId Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([fromUserId, toUserId])
+}
+
+model Post {
+  id        Int        @id @default(autoincrement())
+  published Boolean    @default(false)
+  content   String
+  image     String
+  likes     Likes[]
+  comments  Comments[]
+  share     Share[]
+  authorId  Int?
+  author    User?      @relation(fields: [authorId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Likes {
+  id         Int       @id @default(autoincrement())
+  post       Post?     @relation(fields: [postId], references: [id])
+  postId     Int?
+  likedBy    User?     @relation(fields: [likedById], references: [id])
+  likedById  Int?
+  comments   Comments? @relation(fields: [commentsId], references: [id])
+  commentsId Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Comments {
+  id             Int      @id @default(autoincrement())
+  post           Post?    @relation(fields: [postId], references: [id])
+  postId         Int?
+  content        String
+  commentedBy    User?    @relation(fields: [commentedById], references: [id], name: "commented_by")
+  commentedById  Int?
+  likes          Likes[]
+  mentionedUsers Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Share {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String?
-  posts     Post[]
+  post      Post?    @relation(fields: [postId], references: [id])
+  postId    Int?
+  shareTo   User?    @relation(fields: [shareToId], references: [id])
+  shareToId Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  published Boolean  @default(false)
-  title     String
-  content   String?
-  authorId  Int?
-  author    User?    @relation(fields: [authorId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Settings {
+  id                 Int            @id @default(autoincrement())
+  enableNotification Boolean?
+  profilePrivacy     ProfilePrivacy
+  postPrivacy        PostPrivacy
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  user               User[]
+}
+
+enum ProfilePrivacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum PostPrivacy {
+  PUBLIC
+  ONLY_FRIENDS
+  PRIVATE
+}
+
+enum Status {
+  PEDING
+  ACCEPTED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Role {
+  USER
+  ADMIN
 }

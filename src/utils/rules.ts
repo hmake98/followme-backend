@@ -1,4 +1,4 @@
-import { shield, rule } from 'graphql-shield'
+import { shield, rule, allow } from 'graphql-shield'
 import { Context } from '../types'
 import { handleError } from './helpers'
 import { errors } from './constants'
@@ -36,14 +36,12 @@ export const rules = {
 
 export const permissions = shield({
   Query: {
-    me: rules.isAuthenticatedUser,
-    posts: rules.isAuthenticatedUser,
-    post: rules.isAuthenticatedUser,
+    '*': rules.isAuthenticatedUser,
   },
   Mutation: {
-    createDraft: rules.isAuthenticatedUser,
-    deletePost: rules.isPostOwner,
-    publish: rules.isPostOwner,
+    login: allow,
+    signup: allow,
+    '*': rules.isAuthenticatedUser,
   },
   Subscription: {
     latestPost: rules.isAuthenticatedUser,

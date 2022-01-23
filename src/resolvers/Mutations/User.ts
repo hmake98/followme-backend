@@ -65,5 +65,7 @@ export const user = extendType({
         }
       },
     })
+
+    t.crud.updateOneUser()
   },
 })
