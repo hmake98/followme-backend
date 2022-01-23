@@ -11,8 +11,6 @@ import { createContext } from './utils/helpers'
 export const server = new ApolloServer({
   schema: applyMiddleware(schema, permissions),
   context: createContext,
-  playground: true,
-  tracing: isDev(),
   introspection: true,
   debug: isDev(),
   cors: true,

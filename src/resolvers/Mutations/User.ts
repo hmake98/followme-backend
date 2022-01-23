@@ -9,18 +9,28 @@ export const user = extendType({
     t.field('signup', {
       type: 'AuthPayload',
       args: {
+        username: nonNull(stringArg()),
         name: stringArg(),
         email: nonNull(stringArg()),
         password: nonNull(stringArg()),
       },
-      async resolve(_parent, { name, email, password }, ctx) {
+      async resolve(_parent, { username, name, email, password }, ctx) {
         try {
           const hashedPassword = await hash(password, 10)
           const user = await ctx.prisma.user.create({
             data: {
+              username,
               name,
               email,
               password: hashedPassword,
+              role: 'USER',
+              settings: {
+                create: {
+                  postPrivacy: 'PUBLIC',
+                  profilePrivacy: 'PUBLIC',
+                  enableNotification: true,
+                },
+              },
             },
           })
 
